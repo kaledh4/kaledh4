@@ -1,19 +1,19 @@
 {
-    "short_name": "c-editor v1",
+    "short_name": "DASHBOARD",
     "name": "c-editor by chandru",
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#000000",
+    "theme_color": "#ffffff",
     "background_color": "#ffffff",
     "icons": [
       {
-        "src": "img/logo192.png",
+        "src": "img/small.png",
         "type": "image/png",
         "sizes": "192x192",
         "purpose": "any maskable"
       },
       {
-        "src": "img/logo512.png",
+        "src": "img/big.png",
         "type": "image/png",
         "sizes": "512x512"
       }
