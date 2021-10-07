@@ -1,7 +1,7 @@
 /* Page styling -- Not needed to replicate button visuals. */
 html,
 body {
-  margin: 0;
+  margin: 50;
   display: flex;
   justify-content: center;
   flex-direction: column;
