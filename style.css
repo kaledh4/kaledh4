@@ -1,7 +1,7 @@
 /* Page styling -- Not needed to replicate button visuals. */
 html,
 body {
-  margin: 50;
+  margin: 40;
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -36,7 +36,7 @@ button {
   z-index: -1;
   position: absolute;
   height: 100%;
-  top: 1px;
+  top: 17px;
   left: 7px;
   transition: 0.2s;
 }
