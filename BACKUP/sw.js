@@ -4,8 +4,8 @@ var cacheAssets = [
   '/',
     '/index.html',
     '/app.js',
-    '/img/logo192.png',
-    '/img/logo512.png'
+    '/img/lion192.png',
+    '/img/lion512.png'
   
 ]; 
 
