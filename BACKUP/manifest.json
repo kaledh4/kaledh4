@@ -7,13 +7,13 @@
     "background_color": "#ffffff",
     "icons": [
       {
-        "src": "img/logo192.png",
+        "src": "img/lion192.png",
         "type": "image/png",
         "sizes": "192x192",
         "purpose": "any maskable"
       },
       {
-        "src": "img/logo512.png",
+        "src": "img/lion512.png",
         "type": "image/png",
         "sizes": "512x512"
       }
