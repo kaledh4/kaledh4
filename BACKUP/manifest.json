@@ -1,0 +1,22 @@
+{
+    "short_name": "c-editor v1",
+    "name": "c-editor by chandru",
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff",
+    "icons": [
+      {
+        "src": "img/logo192.png",
+        "type": "image/png",
+        "sizes": "192x192",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "img/logo512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+    
+  }
