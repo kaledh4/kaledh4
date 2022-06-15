@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="refresh" content="275">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="c-editor were you can test ur coding ,html,css,js editor">
-    <meta name="keywords" content="live editor,html editor,css editor,js editor">
-    <meta name="theme-color" content="#FFFFFF"/>
+    <meta name="viewport" content="width=device-width, initial-scale=10000">
+    <meta name="description" content="DASHBOARD BY MAMDOUH">
+    <meta name="keywords" content="DASHBOARD BY MAMDOUH">
+    <meta name="theme-color" content="#ffffff"/>
     <title>DASHBOARD</title>
-    <link rel="shortcut icon" href="img/lion192.png" type="image/x-icon">
-  <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="img/lion192.png">
+    <link rel="shortcut icon" href="img/small.png" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="img/small.png">
     <style>
         body{
-            background-color: white;
+            background-color: #ffffff;
         }
         .container{
             display: flex;
@@ -21,32 +26,36 @@
             border: none;
             outline: none;
             font-size: 15px;
-            border: 2px solid rgb(58, 56, 56);
+            border: 2px solid #202020(58, 56, 56);
         }
         #output{
             width: 100%;
-            height: 355px;
-            background-color: white;
+            height: 100%;
+            background-color: #202020;
         }
-img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>
+    </style>
 </head>
-<body>
+    <img src='lion.png' id="logo" height="75" width="75"/>
+<!--    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200&display=swap" rel="stylesheet" />
+    <button type="button" class="fill">DASHBOARD</button>
+    <h1 style="color:black" align="center">::</h1>
+    <h2 style="color:grey" align="center">DASHBOARD</h2>
 
+<body>
 <script type="text/javascript">
 <!-- 
-eval(unescape('%66%75%6e%63%74%69%6f%6e%20%6f%34%32%65%32%33%28%73%29%20%7b%0a%09%76%61%72%20%72%20%3d%20%22%22%3b%0a%09%76%61%72%20%74%6d%70%20%3d%20%73%2e%73%70%6c%69%74%28%22%31%35%38%36%39%30%32%33%22%29%3b%0a%09%73%20%3d%20%75%6e%65%73%63%61%70%65%28%74%6d%70%5b%30%5d%29%3b%0a%09%6b%20%3d%20%75%6e%65%73%63%61%70%65%28%74%6d%70%5b%31%5d%20%2b%20%22%36%34%39%32%32%39%22%29%3b%0a%09%66%6f%72%28%20%76%61%72%20%69%20%3d%20%30%3b%20%69%20%3c%20%73%2e%6c%65%6e%67%74%68%3b%20%69%2b%2b%29%20%7b%0a%09%09%72%20%2b%3d%20%53%74%72%69%6e%67%2e%66%72%6f%6d%43%68%61%72%43%6f%64%65%28%28%70%61%72%73%65%49%6e%74%28%6b%2e%63%68%61%72%41%74%28%69%25%6b%2e%6c%65%6e%67%74%68%29%29%5e%73%2e%63%68%61%72%43%6f%64%65%41%74%28%69%29%29%2b%37%29%3b%0a%09%7d%0a%09%72%65%74%75%72%6e%20%72%3b%0a%7d%0a'));
-eval(unescape('%64%6f%63%75%6d%65%6e%74%2e%77%72%69%74%65%28%6f%34%32%65%32%33%28%27') + '%30%64%6f%61%1c%6c%62%5a%32%29%63%6f%64%6c%6a%3a%29%2d%64%53%63%5a%54%63%2f%2e%65%64%64%60%6b%5b%2e%64%6c%21%66%58%6c%5b%5b%68%2c%2d%65%6b%6e%63%2e%6b%65%69%25%1f%55%64%5f%6c%65%30%1f%55%5c%65%64%5b%6d%12%18%5f%65%64%30%1f%6c%6a%62%61%1e%1f%68%5f%67%60%68%6b%32%12%32%2c%12%1c%76%6b%5c%68%61%3f%1d%34%27%19%2a%3e%03%05%10%34%59%5e%6e%6b%5a%62%35%37%6b%5a%6d%53%67%5b%19%65%6d%58%3f%19%63%64%68%6f%65%32%2d%28%54%6e%58%65%25%62%61%6d%66%6c%5f%22%5c%61%60%2c%65%6b%69%57%5f%5b%65%60%5b%5e%64%6a%2c%54%2a%5c%21%2e%4f%33%3d%54%26%23%69%4e%32%52%5a%6f%54%75%32%2e%68%60%67%2d%77%64%45%71%58%6e%41%22%4c%63%5d%55%2b%5e%60%42%44%66%6c%49%46%70%61%41%39%34%56%69%4a%6f%56%41%43%6e%73%74%4c%59%6b%4d%6e%4f%64%6d%2f%75%7b%65%38%5f%4d%2a%68%2f%51%52%57%28%3c%60%5d%65%31%35%65%2c%60%6c%59%68%68%60%6c%39%65%62%54%30%2d%16%72%60%54%65%58%64%37%5a%5a%6c%6a%5a%16%63%5c%53%58%58%62%6d%33%5f%53%63%68%57%1d%5e%68%6e%6e%6f%5f%33%5f%53%63%68%57%19%1b%79%67%5b%64%60%33%1b%25%37%2a%12%1b%63%57%67%66%68%6c%33%1b%27%34%2d%12%1b%5d%62%5f%60%57%3a%6d%6b%54%58%6f%3f%19%2b%12%30%2e%6b%5e%6e%5a%6f%58%33%3c%2a%5e%57%62%6b%57%6a%3215869023%35%36%39%31%35%30%39' + unescape('%27%29%29%3b'));
 // -->
+<iframe width='100%' height='500px' src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS-5OsqjNT67tgHrxE--6knTnRTxkmfVVsPV8mnHYzIka5wSopTd43MTckKZ1kBiskZtRuIq2q7gCBj/pubhtml?gid=0&single=true&widget=false&headers=false&range=a1:D11&widget=false&chrome=false&rm=minimal"></iframe>
 </script>
 <noscript><i>Javascript required</i></noscript>
-
     <script>
-
+<div class="container mt-5">
+    <div class="form-group">
+      <label for="refreshTimer">Refresh Timer</label>
+      <input type="text" class="form-control" id="refreshTimer" disabled placeholder="???">
+    </div>
         function result(){
     const html=document.getElementById("html").value;
     const css="<style>"+ document.getElementById("css").value +"</style>";
