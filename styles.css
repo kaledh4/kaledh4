@@ -151,16 +151,16 @@ footer {
     padding: 1rem;
     background-color: var(--secondary-color);
     border-radius: 8px;
-}
-
-.info-section h2 {
-    margin-top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .halving-details {
     display: flex;
     gap: 2rem;
-    margin-bottom: 1rem;
 }
 
 #halving-data-container dl {
