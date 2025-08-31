@@ -1,70 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="refresh" content="275">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="DASHBOARD BY MAMDOUH">
     <meta name="keywords" content="DASHBOARD BY MAMDOUH">
-    <meta name="theme-color" content="#FC7F45"/>
+    <meta name="theme-color" content="#008000"/>
     <title>DASH-BOARD</title>
-    <link rel="shortcut icon" href="img/small.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" href="images/lion192.png" type="image/x-icon">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="img/small.png">
-    <style>
-        body{
-            background-color: #ffffff;
-        }
-        .container{
-            display: flex;
-        }
-        textarea{
-            border: none;
-            outline: none;
-            font-size: 15px;
-            border: 2px solid #202020(58, 56, 56);
-        }
-        #output{
-            width: 100%;
-            height: 100%;
-            background-color: #202020;
-        }
-    </style>
+    <link rel="apple-touch-icon" href="images/lion192.png">
 </head>
-    <img src='lion.png' id="logo" height="75" width="75"/>
-<!--    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200&display=swap" rel="stylesheet" />
-    <button type="button" class="fill">DASHBOARD</button>
-    <h1 style="color:black" align="center">::</h1>
-    <h2 style="color:grey" align="center">DASHBOARD</h2>
-
 <body>
-<script type="text/javascript">
-<!-- 
-// -->
-<iframe width='100%' height='500px'  frameBorder="0" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS-5OsqjNT67tgHrxE--6knTnRTxkmfVVsPV8mnHYzIka5wSopTd43MTckKZ1kBiskZtRuIq2q7gCBj/pubhtml?gid=0&single=true&widget=false&headers=false&range=B1:E11&widget=false&chrome=false&rm=minimal"></iframe>
-</script>
-<noscript><i>Javascript required</i></noscript>
-    <script>
-<div class="container mt-5">
-    <div class="form-group">
-      <label for="refreshTimer">Refresh Timer</label>
-      <input type="text" class="form-control" id="refreshTimer" disabled placeholder="???">
-    </div>
-        function result(){
-    const html=document.getElementById("html").value;
-    const css="<style>"+ document.getElementById("css").value +"</style>";
-    const js=document.getElementById("js").value;
-    const output=document.getElementById("output");
-    output.contentDocument.body.innerHTML = html+css;
-    output.contentWindow.eval(js);
-        }
-    </script>
+    <header>
+        <img src='images/lion192.png' id="logo" alt="logo" />
+        <h1>Dashboard</h1>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="iframe-container">
+                <iframe id="sheet-iframe" title="Google Sheet" frameBorder="0" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vS-5OsqjNT67tgHrxE--6knTnRTxkmfVVsPV8mnHYzIka5wSopTd43MTckKZ1kBiskZtRuIq2q7gCBj/pubhtml?gid=0&single=true&widget=false&headers=false&range=B1:E11&widget=false&chrome=false&rm=minimal"></iframe>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Dashboard by Mamdouh</p>
+    </footer>
+
     <script src="app.js"></script>
 </body>
 </html>
