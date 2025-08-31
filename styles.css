@@ -63,22 +63,6 @@ main {
     padding: 1rem;
 }
 
-.iframe-container {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
-    height: 0;
-}
-
-.iframe-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-
 footer {
     background-color: var(--primary-color);
     padding: 1rem;
@@ -160,6 +144,74 @@ footer {
     cursor: pointer;
     font-size: 1rem;
 }
+
+/* New Styles */
+.info-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+}
+
+.info-section h2 {
+    margin-top: 0;
+}
+
+.halving-details {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+#halving-data-container dl {
+    display: grid;
+    grid-template-columns: max-content auto;
+    gap: 0.5rem 1rem;
+}
+
+#halving-data-container dt {
+    font-weight: bold;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table td {
+    padding: 0.5rem;
+    border: 1px solid var(--secondary-color);
+    text-align: right;
+}
+
+.data-table tr td:first-child {
+    text-align: left;
+    font-weight: bold;
+}
+
+.info-text {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 1rem;
+}
+
+.error {
+    color: var(--red);
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Gradient Color Classes */
+.gradient-1 { background-color: var(--gradient-1); color: white; }
+.gradient-2 { background-color: var(--gradient-2); color: white; }
+.gradient-3 { background-color: var(--gradient-3); color: black; }
+.gradient-4 { background-color: var(--gradient-4); color: black; }
+.gradient-5 { background-color: var(--gradient-5); color: black; }
+.gradient-6 { background-color: var(--gradient-6); color: white; }
+.gradient-7 { background-color: var(--gradient-7); color: white; }
+.gradient-8 { background-color: var(--gradient-8); color: white; }
+.gradient-9 { background-color: var(--gradient-9); color: white; }
+.gradient-10 { background-color: var(--gradient-10); color: white; }
 
 #settings-btn {
     background-color: var(--green);
