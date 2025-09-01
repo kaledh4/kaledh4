@@ -26,6 +26,13 @@
             <form id="settings-form">
                 <label for="csv-url">Published Google Sheet CSV URL:</label>
                 <input type="url" id="csv-url" placeholder="Enter your published CSV URL" required>
+
+                <label for="low-threshold">Low Price Threshold (Red):</label>
+                <input type="number" id="low-threshold" step="any" placeholder="e.g., 0.1">
+
+                <label for="high-threshold">High Price Threshold (Green):</label>
+                <input type="number" id="high-threshold" step="any" placeholder="e.g., 0.65">
+
                 <button type="submit">Save</button>
             </form>
             <p class="info-text">

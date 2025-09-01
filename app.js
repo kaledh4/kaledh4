@@ -7,17 +7,25 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
     const settingsBtn = document.getElementById('settings-btn');
     const modal = document.getElementById('settings-modal');
     const closeBtn = document.querySelector('.close-btn');
     const settingsForm = document.getElementById('settings-form');
     const csvUrlInput = document.getElementById('csv-url');
+    const lowThresholdInput = document.getElementById('low-threshold');
+    const highThresholdInput = document.getElementById('high-threshold');
     const dataContainer = document.getElementById('data-container');
-    const countdownTimer = document.getElementById('countdown-timer');
-    const halvingDataContainer = document.getElementById('halving-data-container');
 
+    // --- Constants and State ---
     const CSV_URL_KEY = 'csvUrl';
+    const LOW_THRESHOLD_KEY = 'lowThreshold';
+    const HIGH_THRESHOLD_KEY = 'highThreshold';
     const DEFAULT_CSV_URL = 'dummy_data.csv';
+    let state = {
+        lowThreshold: 0.1,
+        highThreshold: 0.65
+    };
 
     // --- Modal Logic ---
     settingsBtn.addEventListener('click', () => modal.style.display = 'block');
@@ -29,11 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const newUrl = csvUrlInput.value;
-        if (newUrl) {
-            localStorage.setItem(CSV_URL_KEY, newUrl);
-            fetchAndDisplayData(newUrl);
-            modal.style.display = 'none';
+        const newLow = parseFloat(lowThresholdInput.value);
+        const newHigh = parseFloat(highThresholdInput.value);
+
+        localStorage.setItem(CSV_URL_KEY, newUrl);
+        if (!isNaN(newLow)) {
+            localStorage.setItem(LOW_THRESHOLD_KEY, newLow);
+            state.lowThreshold = newLow;
         }
+        if (!isNaN(newHigh)) {
+            localStorage.setItem(HIGH_THRESHOLD_KEY, newHigh);
+            state.highThreshold = newHigh;
+        }
+
+        fetchAndDisplayData();
+        modal.style.display = 'none';
     });
 
     // --- Data Fetching and Rendering ---
@@ -58,39 +76,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function getColorClass(value) {
+    function getColorClass(value, low, high) {
         const num = parseFloat(value);
-        if (isNaN(num)) return '';
+        if (isNaN(num) || low == null || high == null || high <= low) return '';
 
-        if (num < 0) return 'gradient-1';
-        if (num >= 0 && num < 1) return 'gradient-2';
-        if (num >= 1 && num < 10) return 'gradient-3';
-        if (num >= 10 && num < 50) return 'gradient-4';
-        if (num >= 50 && num < 100) return 'gradient-5';
-        if (num >= 100 && num < 1000) return 'gradient-6';
-        if (num >= 1000 && num < 5000) return 'gradient-7';
-        if (num >= 5000 && num < 10000) return 'gradient-8';
-        if (num >= 10000 && num < 50000) return 'gradient-9';
-        if (num >= 50000) return 'gradient-10';
-        return '';
+        if (num <= low) return 'gradient-1';
+        if (num >= high) return 'gradient-10';
+
+        const percentage = (num - low) / (high - low);
+        const gradientIndex = Math.ceil(percentage * 8) + 1; // Map to gradients 2-9
+        return `gradient-${gradientIndex}`;
     }
 
     function renderData(data) {
+        const halvingRow = createHalvingRow();
+        const fullData = [halvingRow, ...data];
+
         const table = document.createElement('table');
         table.className = 'data-table';
         const tbody = document.createElement('tbody');
 
-        data.forEach(rowData => {
+        fullData.forEach(rowData => {
             const tr = document.createElement('tr');
-            rowData.forEach(cellData => {
+            const currentPrice = parseFloat(rowData[1]);
+            const potentialHigh = parseFloat(rowData[4]);
+
+            rowData.forEach((cellData, index) => {
                 const td = document.createElement('td');
                 td.textContent = cellData;
-                const colorClass = getColorClass(cellData);
-                if (colorClass) {
-                    td.classList.add(colorClass);
+
+                if (index === 1) { // Apply color to current price column
+                    const colorClass = getColorClass(cellData, state.lowThreshold, state.highThreshold);
+                    if (colorClass) {
+                        td.classList.add(colorClass);
+                    }
                 }
                 tr.appendChild(td);
             });
+
+            // Calculate and add "x" value cell
+            const xCell = document.createElement('td');
+            if (!isNaN(currentPrice) && !isNaN(potentialHigh) && currentPrice > 0) {
+                const xValue = (potentialHigh / currentPrice).toFixed(2) + 'x';
+                xCell.textContent = xValue;
+            }
+            tr.appendChild(xCell);
+
             tbody.appendChild(tr);
         });
 
@@ -99,12 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dataContainer.appendChild(table);
     }
 
-    async function fetchAndDisplayData(url) {
+    async function fetchAndDisplayData() {
+        const url = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
         try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            const response = await fetch(url, { cache: 'no-cache' });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const csvText = await response.text();
             const data = parseCSV(csvText);
             renderData(data);
@@ -114,48 +144,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Halving Countdown and Data ---
-    function updateCountdown() {
+    // --- Halving Countdown ---
+    function createHalvingRow() {
         const halvingDate = new Date('2028-07-01T00:00:00');
         const now = new Date();
         const diffTime = halvingDate - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        countdownTimer.textContent = `${diffDays} days`;
+        return ['Halving', `Days Remaining: ${diffDays}`, 'Block: 1,050,000', 'Reward: 1.5625 BTC', ''];
     }
 
-    function displayHalvingData() {
-        const halvingData = {
-            "Estimated Year": "2028",
-            "Block": "1,050,000",
-            "Block Reward After Halving": "1.5625 BTC"
-        };
-        const dl = document.createElement('dl');
-        for (const [key, value] of Object.entries(halvingData)) {
-            const dt = document.createElement('dt');
-            dt.textContent = key;
-            const dd = document.createElement('dd');
-            dd.textContent = value;
-            dl.appendChild(dt);
-            dl.appendChild(dd);
-        }
-        halvingDataContainer.innerHTML = '';
-        halvingDataContainer.appendChild(dl);
-    }
-
-    // --- Initial Load and Refresh ---
-    function initializeApp() {
+    // --- Initial Load and State Management ---
+    function loadState() {
         const savedUrl = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
+        const savedLow = parseFloat(localStorage.getItem(LOW_THRESHOLD_KEY));
+        const savedHigh = parseFloat(localStorage.getItem(HIGH_THRESHOLD_KEY));
+
         csvUrlInput.value = savedUrl;
-        fetchAndDisplayData(savedUrl);
-        updateCountdown();
-        displayHalvingData();
+        if (!isNaN(savedLow)) {
+            state.lowThreshold = savedLow;
+            lowThresholdInput.value = savedLow;
+        }
+        if (!isNaN(savedHigh)) {
+            state.highThreshold = savedHigh;
+            highThresholdInput.value = savedHigh;
+        }
+    }
 
-        setInterval(() => {
-            const currentUrl = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
-            fetchAndDisplayData(currentUrl);
-        }, 6 * 60 * 60 * 1000);
+    function initializeApp() {
+        loadState();
+        fetchAndDisplayData();
 
-        setInterval(updateCountdown, 60 * 60 * 1000);
+        // Refresh data every 5 minutes
+        setInterval(fetchAndDisplayData, 5 * 60 * 1000);
     }
 
     initializeApp();
