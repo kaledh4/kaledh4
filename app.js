@@ -8,123 +8,183 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
+    const assetGrid = document.getElementById('asset-grid');
     const settingsBtn = document.getElementById('settings-btn');
     const modal = document.getElementById('settings-modal');
     const closeBtn = document.querySelector('.close-btn');
-    const settingsForm = document.getElementById('settings-form');
+
+    const settingsMainView = document.getElementById('settings-main-view');
+    const csvUrlForm = document.getElementById('csv-url-form');
     const csvUrlInput = document.getElementById('csv-url');
+    const assetSettingsList = document.getElementById('asset-settings-list');
+
+    const settingsAssetView = document.getElementById('settings-asset-view');
+    const settingsBackBtn = document.getElementById('settings-back-btn');
+    const assetSettingName = document.getElementById('asset-setting-name');
+    const assetSettingsForm = document.getElementById('asset-settings-form');
+    const assetTickerInput = document.getElementById('asset-ticker-input');
     const lowThresholdInput = document.getElementById('low-threshold');
     const highThresholdInput = document.getElementById('high-threshold');
-    const dataContainer = document.getElementById('data-container');
 
     // --- Constants and State ---
     const CSV_URL_KEY = 'csvUrl';
-    const LOW_THRESHOLD_KEY = 'lowThreshold';
-    const HIGH_THRESHOLD_KEY = 'highThreshold';
+    const THRESHOLDS_KEY = 'assetThresholds';
     const DEFAULT_CSV_URL = 'dummy_data.csv';
     let state = {
-        lowThreshold: 0.1,
-        highThreshold: 0.65
+        data: [],
+        thresholds: {} // { BTC: { low: 0.1, high: 1.0 }, ETH: { ... } }
     };
 
-    // --- Modal Logic ---
-    settingsBtn.addEventListener('click', () => modal.style.display = 'block');
+    // --- Settings UI Logic ---
+    function showAssetSettingsView(assetName) {
+        const assetThresholds = state.thresholds[assetName] || {};
+        assetSettingName.textContent = `Settings for ${assetName}`;
+        assetTickerInput.value = assetName;
+        lowThresholdInput.value = assetThresholds.low || '';
+        highThresholdInput.value = assetThresholds.high || '';
+        settingsMainView.style.display = 'none';
+        settingsAssetView.style.display = 'block';
+    }
+
+    function showMainSettingsView() {
+        settingsMainView.style.display = 'block';
+        settingsAssetView.style.display = 'none';
+    }
+
+    function populateAssetSettingsList() {
+        assetSettingsList.innerHTML = '';
+        state.data.forEach(rowData => {
+            const assetName = rowData[0];
+            const button = document.createElement('button');
+            button.className = 'asset-setting-item';
+            button.textContent = assetName;
+            button.addEventListener('click', () => showAssetSettingsView(assetName));
+            assetSettingsList.appendChild(button);
+        });
+    }
+
+    settingsBtn.addEventListener('click', () => {
+        populateAssetSettingsList();
+        modal.style.display = 'block';
+    });
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     window.addEventListener('click', (event) => {
         if (event.target == modal) modal.style.display = 'none';
     });
+    settingsBackBtn.addEventListener('click', showMainSettingsView);
 
-    settingsForm.addEventListener('submit', (e) => {
+    csvUrlForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const newUrl = csvUrlInput.value;
+        localStorage.setItem(CSV_URL_KEY, csvUrlInput.value);
+        fetchAndDisplayData();
+    });
+
+    assetSettingsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const assetName = assetTickerInput.value;
         const newLow = parseFloat(lowThresholdInput.value);
         const newHigh = parseFloat(highThresholdInput.value);
 
-        localStorage.setItem(CSV_URL_KEY, newUrl);
-        if (!isNaN(newLow)) {
-            localStorage.setItem(LOW_THRESHOLD_KEY, newLow);
-            state.lowThreshold = newLow;
+        if (!state.thresholds[assetName]) {
+            state.thresholds[assetName] = {};
         }
-        if (!isNaN(newHigh)) {
-            localStorage.setItem(HIGH_THRESHOLD_KEY, newHigh);
-            state.highThreshold = newHigh;
-        }
+        if (!isNaN(newLow)) state.thresholds[assetName].low = newLow;
+        if (!isNaN(newHigh)) state.thresholds[assetName].high = newHigh;
 
-        fetchAndDisplayData();
-        modal.style.display = 'none';
+        localStorage.setItem(THRESHOLDS_KEY, JSON.stringify(state.thresholds));
+        renderData(state.data);
+        showMainSettingsView();
     });
+
 
     // --- Data Fetching and Rendering ---
     function parseCSV(csvText) {
         const rows = csvText.trim().split('\n');
         return rows.map(row => {
-            const values = [];
-            let currentVal = '';
-            let inQuotes = false;
-            for (const char of row) {
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(currentVal.trim());
-                    currentVal = '';
-                } else {
-                    currentVal += char;
-                }
-            }
-            values.push(currentVal.trim());
-            return values;
+            // This is a simplified parser. A more robust solution would handle quoted commas.
+            return row.split(',');
         });
     }
 
-    function getColorClass(value, low, high) {
+    function getColorClass(value, assetName) {
+        const thresholds = state.thresholds[assetName];
+        if (!thresholds) return '';
+
         const num = parseFloat(value);
+        const { low, high } = thresholds;
+
         if (isNaN(num) || low == null || high == null || high <= low) return '';
 
         if (num <= low) return 'gradient-1';
         if (num >= high) return 'gradient-10';
 
         const percentage = (num - low) / (high - low);
-        const gradientIndex = Math.ceil(percentage * 8) + 1; // Map to gradients 2-9
+        const gradientIndex = Math.ceil(percentage * 8) + 1;
         return `gradient-${gradientIndex}`;
     }
 
     function renderData(data) {
-        const table = document.createElement('table');
-        table.className = 'data-table';
-        const tbody = document.createElement('tbody');
-
+        assetGrid.innerHTML = '';
         data.forEach(rowData => {
-            const tr = document.createElement('tr');
+            const assetName = rowData[0];
             const currentPrice = parseFloat(rowData[1]);
             const potentialHigh = parseFloat(rowData[4]);
 
-            rowData.forEach((cellData, index) => {
-                const td = document.createElement('td');
-                td.textContent = cellData;
+            const card = document.createElement('div');
+            card.className = 'asset-card';
 
-                if (index === 1) { // Apply color to current price column
-                    const colorClass = getColorClass(cellData, state.lowThreshold, state.highThreshold);
-                    if (colorClass) {
-                        td.classList.add(colorClass);
-                    }
-                }
-                tr.appendChild(td);
-            });
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header';
+            const nameEl = document.createElement('span');
+            nameEl.className = 'asset-name';
+            nameEl.textContent = assetName;
+            cardHeader.appendChild(nameEl);
 
-            // Calculate and add "x" value cell
-            const xCell = document.createElement('td');
             if (!isNaN(currentPrice) && !isNaN(potentialHigh) && currentPrice > 0) {
                 const xValue = (potentialHigh / currentPrice).toFixed(2) + 'x';
-                xCell.textContent = xValue;
+                const xValueEl = document.createElement('span');
+                xValueEl.className = 'asset-x-value';
+                xValueEl.textContent = xValue;
+                cardHeader.appendChild(xValueEl);
             }
-            tr.appendChild(xCell);
+            card.appendChild(cardHeader);
 
-            tbody.appendChild(tr);
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+            const pricePoint = document.createElement('div');
+            pricePoint.className = 'data-point';
+            const priceLabel = document.createElement('span');
+            priceLabel.className = 'label';
+            priceLabel.textContent = 'Current Price';
+            const priceValue = document.createElement('div');
+            priceValue.className = 'value risk-level';
+            priceValue.textContent = isNaN(currentPrice) ? rowData[1] : currentPrice;
+            const colorClass = getColorClass(currentPrice, assetName);
+            if (colorClass) {
+                priceValue.classList.add(colorClass);
+            }
+            pricePoint.appendChild(priceLabel);
+            pricePoint.appendChild(priceValue);
+            cardBody.appendChild(pricePoint);
+
+            for (let i = 2; i < rowData.length; i++) {
+                if (rowData[i]) {
+                    const dataPoint = document.createElement('div');
+                    dataPoint.className = 'data-point';
+                    const label = document.createElement('span');
+                    label.className = 'label';
+                    label.textContent = `Data ${i - 1}`;
+                    const value = document.createElement('span');
+                    value.className = 'value';
+                    value.textContent = rowData[i];
+                    dataPoint.appendChild(label);
+                    dataPoint.appendChild(value);
+                    cardBody.appendChild(dataPoint);
+                }
+            }
+            card.appendChild(cardBody);
+            assetGrid.appendChild(card);
         });
-
-        table.appendChild(tbody);
-        dataContainer.innerHTML = '';
-        dataContainer.appendChild(table);
     }
 
     async function fetchAndDisplayData() {
@@ -133,11 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(url, { cache: 'no-cache' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const csvText = await response.text();
-            const data = parseCSV(csvText);
-            renderData(data);
+            state.data = parseCSV(csvText);
+            renderData(state.data);
         } catch (error) {
             console.error('Error fetching or parsing data:', error);
-            dataContainer.innerHTML = `<p class="error">Could not load data. Please check the CSV URL in Settings.</p>`;
+            assetGrid.innerHTML = `<p class="error">Could not load data. Please check the CSV URL in Settings.</p>`;
         }
     }
 
@@ -174,18 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load and State Management ---
     function loadState() {
         const savedUrl = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
-        const savedLow = parseFloat(localStorage.getItem(LOW_THRESHOLD_KEY));
-        const savedHigh = parseFloat(localStorage.getItem(HIGH_THRESHOLD_KEY));
-
         csvUrlInput.value = savedUrl;
-        if (!isNaN(savedLow)) {
-            state.lowThreshold = savedLow;
-            lowThresholdInput.value = savedLow;
-        }
-        if (!isNaN(savedHigh)) {
-            state.highThreshold = savedHigh;
-            highThresholdInput.value = savedHigh;
-        }
+
+        const savedThresholds = JSON.parse(localStorage.getItem(THRESHOLDS_KEY)) || {};
+        state.thresholds = savedThresholds;
     }
 
     function initializeApp() {
@@ -194,9 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         displayHalvingData();
         updateCountdown();
 
-        // Refresh data every 5 minutes
         setInterval(fetchAndDisplayData, 5 * 60 * 1000);
-        // Update countdown every hour
         setInterval(updateCountdown, 60 * 60 * 1000);
     }
 

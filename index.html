@@ -22,32 +22,44 @@
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>Settings</h2>
-            <form id="settings-form">
-                <label for="csv-url">Published Google Sheet CSV URL:</label>
-                <input type="url" id="csv-url" placeholder="Enter your published CSV URL" required>
+            <div id="settings-main-view">
+                <h2>Settings</h2>
+                <form id="csv-url-form">
+                    <label for="csv-url">Published Google Sheet CSV URL:</label>
+                    <input type="url" id="csv-url" placeholder="Enter your published CSV URL" required>
+                    <button type="submit">Save URL</button>
+                </form>
+                <p class="info-text">
+                    To get your CSV URL, open your Google Sheet, go to File > Share > Publish to web, select your sheet and "Comma-separated values (.csv)", and click Publish.
+                </p>
+                <hr>
+                <h3>Asset-Specific Thresholds</h3>
+                <div id="asset-settings-list">
+                    <!-- List of assets will be rendered here by JS -->
+                </div>
+            </div>
+            <div id="settings-asset-view" style="display: none;">
+                <button id="settings-back-btn">&larr; Back</button>
+                <h2 id="asset-setting-name"></h2>
+                <form id="asset-settings-form">
+                    <input type="hidden" id="asset-ticker-input">
+                    <label for="low-threshold">Low Price Threshold (Red):</label>
+                    <input type="number" id="low-threshold" step="any" placeholder="e.g., 0.1">
 
-                <label for="low-threshold">Low Price Threshold (Red):</label>
-                <input type="number" id="low-threshold" step="any" placeholder="e.g., 0.1">
+                    <label for="high-threshold">High Price Threshold (Green):</label>
+                    <input type="number" id="high-threshold" step="any" placeholder="e.g., 0.65">
 
-                <label for="high-threshold">High Price Threshold (Green):</label>
-                <input type="number" id="high-threshold" step="any" placeholder="e.g., 0.65">
-
-                <button type="submit">Save</button>
-            </form>
-            <p class="info-text">
-                To get your CSV URL, open your Google Sheet, go to File > Share > Publish to web, select your sheet and "Comma-separated values (.csv)", and click Publish.
-            </p>
+                    <button type="submit">Save Thresholds</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <main>
         <div class="container">
             <div class="dashboard-layout">
-                <div class="main-content">
-                    <div id="data-container">
-                        <!-- Data from CSV will be rendered here as a table -->
-                    </div>
+                <div id="asset-grid" class="main-content">
+                    <!-- Asset cards will be rendered here by JS -->
                 </div>
                 <aside class="sidebar">
                     <div id="halving-info" class="info-card">
