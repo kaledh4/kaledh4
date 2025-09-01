@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const THRESHOLDS_KEY = 'assetThresholds';
     const DEFAULT_CSV_URL = 'dummy_data.csv';
     let state = {
-        data: [],
-        thresholds: {} // { BTC: { low: 0.1, high: 1.0 }, ETH: { ... } }
+        portfolio: [], // Will hold data from the CSV
+        coinList: {}, // Mapping from symbol to coingecko id
+        thresholds: {}
     };
 
     // --- Settings UI Logic ---
@@ -53,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateAssetSettingsList() {
         assetSettingsList.innerHTML = '';
-        state.data.forEach(rowData => {
-            const assetName = rowData[0];
+        state.portfolio.forEach(asset => {
+            const assetName = asset[0];
             const button = document.createElement('button');
             button.className = 'asset-setting-item';
             button.textContent = assetName;
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     csvUrlForm.addEventListener('submit', (e) => {
         e.preventDefault();
         localStorage.setItem(CSV_URL_KEY, csvUrlInput.value);
-        fetchAndDisplayData();
+        fetchData();
     });
 
     assetSettingsForm.addEventListener('submit', (e) => {
@@ -92,18 +93,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(newHigh)) state.thresholds[assetName].high = newHigh;
 
         localStorage.setItem(THRESHOLDS_KEY, JSON.stringify(state.thresholds));
-        renderData(state.data);
+        renderData();
         showMainSettingsView();
     });
 
 
     // --- Data Fetching and Rendering ---
+    async function fetchCoinList() {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/coins/list');
+            const data = await response.json();
+            data.forEach(coin => {
+                state.coinList[coin.symbol.toUpperCase()] = coin.id;
+            });
+        } catch (error) {
+            console.error("Error fetching coin list:", error);
+        }
+    }
+
     function parseCSV(csvText) {
         const rows = csvText.trim().split('\n');
-        return rows.map(row => {
-            // This is a simplified parser. A more robust solution would handle quoted commas.
-            return row.split(',');
-        });
+        return rows.map(row => row.split(','));
     }
 
     function getColorClass(value, assetName) {
@@ -123,12 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return `gradient-${gradientIndex}`;
     }
 
-    function renderData(data) {
+    function renderData() {
         assetGrid.innerHTML = '';
-        data.forEach(rowData => {
-            const assetName = rowData[0];
-            const currentPrice = parseFloat(rowData[1]);
-            const potentialHigh = parseFloat(rowData[4]);
+        state.portfolio.forEach(assetData => {
+            const assetName = assetData[0];
+            const currentPrice = assetData.livePrice; // Will be added from coingecko
+            const potentialHigh = parseFloat(assetData[4]);
 
             const card = document.createElement('div');
             card.className = 'asset-card';
@@ -140,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nameEl.textContent = assetName;
             cardHeader.appendChild(nameEl);
 
-            if (!isNaN(currentPrice) && !isNaN(potentialHigh) && currentPrice > 0) {
+            if (currentPrice && !isNaN(potentialHigh) && currentPrice > 0) {
                 const xValue = (potentialHigh / currentPrice).toFixed(2) + 'x';
                 const xValueEl = document.createElement('span');
                 xValueEl.className = 'asset-x-value';
@@ -158,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             priceLabel.textContent = 'Current Price';
             const priceValue = document.createElement('div');
             priceValue.className = 'value risk-level';
-            priceValue.textContent = isNaN(currentPrice) ? rowData[1] : currentPrice;
+            priceValue.textContent = currentPrice ? `$${currentPrice}` : (assetData[1] || 'N/A');
             const colorClass = getColorClass(currentPrice, assetName);
             if (colorClass) {
                 priceValue.classList.add(colorClass);
@@ -167,8 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
             pricePoint.appendChild(priceValue);
             cardBody.appendChild(pricePoint);
 
-            for (let i = 2; i < rowData.length; i++) {
-                if (rowData[i]) {
+            for (let i = 2; i < assetData.length; i++) {
+                if (assetData[i]) {
                     const dataPoint = document.createElement('div');
                     dataPoint.className = 'data-point';
                     const label = document.createElement('span');
@@ -176,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     label.textContent = `Data ${i - 1}`;
                     const value = document.createElement('span');
                     value.className = 'value';
-                    value.textContent = rowData[i];
+                    value.textContent = assetData[i];
                     dataPoint.appendChild(label);
                     dataPoint.appendChild(value);
                     cardBody.appendChild(dataPoint);
@@ -187,14 +197,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function fetchAndDisplayData() {
+    async function fetchData() {
+        // 1. Fetch portfolio from CSV
         const url = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
         try {
             const response = await fetch(url, { cache: 'no-cache' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const csvText = await response.text();
-            state.data = parseCSV(csvText);
-            renderData(state.data);
+            state.portfolio = parseCSV(csvText);
+
+            // 2. Get coin IDs for the portfolio
+            const coinIds = state.portfolio.map(asset => state.coinList[asset[0].toUpperCase()]).filter(id => id).join(',');
+
+            // 3. Fetch prices from CoinGecko
+            if (coinIds) {
+                const priceResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=usd`);
+                const priceData = await priceResponse.json();
+
+                // 4. Merge prices into portfolio data
+                state.portfolio.forEach(asset => {
+                    const assetId = state.coinList[asset[0].toUpperCase()];
+                    if (priceData[assetId]) {
+                        asset.livePrice = priceData[assetId].usd;
+                    }
+                });
+            }
+
+            renderData();
+
         } catch (error) {
             console.error('Error fetching or parsing data:', error);
             assetGrid.innerHTML = `<p class="error">Could not load data. Please check the CSV URL in Settings.</p>`;
@@ -240,13 +270,14 @@ document.addEventListener('DOMContentLoaded', () => {
         state.thresholds = savedThresholds;
     }
 
-    function initializeApp() {
+    async function initializeApp() {
         loadState();
-        fetchAndDisplayData();
+        await fetchCoinList();
+        await fetchData();
         displayHalvingData();
         updateCountdown();
 
-        setInterval(fetchAndDisplayData, 5 * 60 * 1000);
+        setInterval(fetchData, 5 * 60 * 1000);
         setInterval(updateCountdown, 60 * 60 * 1000);
     }
 
