@@ -43,16 +43,24 @@
 
     <main>
         <div class="container">
-            <div id="halving-info" class="info-section">
-                <div class="halving-details">
-                    <p><strong>Days Remaining:</strong> <span id="countdown-timer">...</span></p>
+            <div class="dashboard-layout">
+                <div class="main-content">
+                    <div id="data-container">
+                        <!-- Data from CSV will be rendered here as a table -->
+                    </div>
                 </div>
-                <div id="halving-data-container">
-                    <!-- Halving data will be inserted here by JS -->
-                </div>
-            </div>
-            <div id="data-container">
-                <!-- Data from CSV will be rendered here as a table -->
+                <aside class="sidebar">
+                    <div id="halving-info" class="info-card">
+                        <h3>Bitcoin Halving</h3>
+                        <div id="halving-countdown">
+                            <p>Days Remaining</p>
+                            <span id="countdown-timer">...</span>
+                        </div>
+                        <div id="halving-data-container">
+                            <!-- Halving data will be inserted here by JS -->
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
     </main>

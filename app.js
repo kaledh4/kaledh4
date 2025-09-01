@@ -89,14 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderData(data) {
-        const halvingRow = createHalvingRow();
-        const fullData = [halvingRow, ...data];
-
         const table = document.createElement('table');
         table.className = 'data-table';
         const tbody = document.createElement('tbody');
 
-        fullData.forEach(rowData => {
+        data.forEach(rowData => {
             const tr = document.createElement('tr');
             const currentPrice = parseFloat(rowData[1]);
             const potentialHigh = parseFloat(rowData[4]);
@@ -145,12 +142,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Halving Countdown ---
-    function createHalvingRow() {
+    function updateCountdown() {
+        const countdownTimer = document.getElementById('countdown-timer');
         const halvingDate = new Date('2028-07-01T00:00:00');
         const now = new Date();
         const diffTime = halvingDate - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return ['Halving', `Days Remaining: ${diffDays}`, 'Block: 1,050,000', 'Reward: 1.5625 BTC', ''];
+        countdownTimer.textContent = diffDays;
+    }
+
+    function displayHalvingData() {
+        const halvingDataContainer = document.getElementById('halving-data-container');
+        const halvingData = {
+            "Estimated Year": "2028",
+            "Block": "1,050,000",
+            "Block Reward": "1.5625 BTC"
+        };
+        const dl = document.createElement('dl');
+        for (const [key, value] of Object.entries(halvingData)) {
+            const dt = document.createElement('dt');
+            dt.textContent = key;
+            const dd = document.createElement('dd');
+            dd.textContent = value;
+            dl.appendChild(dt);
+            dl.appendChild(dd);
+        }
+        halvingDataContainer.innerHTML = '';
+        halvingDataContainer.appendChild(dl);
     }
 
     // --- Initial Load and State Management ---
@@ -173,9 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeApp() {
         loadState();
         fetchAndDisplayData();
+        displayHalvingData();
+        updateCountdown();
 
         // Refresh data every 5 minutes
         setInterval(fetchAndDisplayData, 5 * 60 * 1000);
+        // Update countdown every hour
+        setInterval(updateCountdown, 60 * 60 * 1000);
     }
 
     initializeApp();
