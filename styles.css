@@ -38,11 +38,29 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 header h1 {
     margin: 0;
     font-size: 1.5rem;
+}
+
+#countdown-display {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+#countdown-display span {
+    font-weight: bold;
+    color: var(--text-color);
 }
 
 #logo {
@@ -187,6 +205,21 @@ footer {
     .dashboard-layout {
         grid-template-columns: 1fr;
     }
+
+    #asset-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .asset-card .card-body {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* New Layout Styles */
@@ -243,6 +276,12 @@ footer {
 
 #halving-data-container dt {
     font-weight: bold;
+}
+
+#fed-stance-display, #interest-rate-display {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 /* Asset Card Styles */
