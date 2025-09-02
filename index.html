@@ -14,9 +14,16 @@
 </head>
 <body>
     <header>
-        <img src='images/lion192.png' id="logo" alt="logo" />
-        <h1>Dashboard</h1>
-        <button id="settings-btn">Settings</button>
+        <div class="header-left">
+            <img src='images/lion192.png' id="logo" alt="logo" />
+            <h1>Dashboard</h1>
+        </div>
+        <div class="header-right">
+            <div id="countdown-display">
+                <span id="countdown-timer"></span> days remaining
+            </div>
+            <button id="settings-btn">Settings</button>
+        </div>
     </header>
 
     <div id="settings-modal" class="modal">
@@ -32,6 +39,24 @@
                 <p class="info-text">
                     Publish your Google Sheet as a CSV to define your portfolio. The app will fetch live prices for the assets in this sheet.
                 </p>
+                <hr>
+                <h3>Macroeconomic Data</h3>
+                <form id="macro-settings-form">
+                    <label for="fed-stance">Fed Stance:</label>
+                    <select id="fed-stance">
+                        <option value="dovish">Dovish</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="hawkish">Hawkish</option>
+                    </select>
+
+                    <label for="fed-rate">Fed Rate (%):</label>
+                    <input type="number" id="fed-rate" step="any">
+
+                    <label for="r-star-rate">R* Rate (%):</label>
+                    <input type="number" id="r-star-rate" step="any">
+
+                    <button type="submit">Save Macro Data</button>
+                </form>
                 <hr>
                 <h3>Asset-Specific Thresholds</h3>
                 <div id="asset-settings-list">
@@ -62,15 +87,13 @@
                     <!-- Asset cards will be rendered here by JS -->
                 </div>
                 <aside class="sidebar">
-                    <div id="halving-info" class="info-card">
-                        <h3>Bitcoin Halving</h3>
-                        <div id="halving-countdown">
-                            <p>Days Remaining</p>
-                            <span id="countdown-timer">...</span>
-                        </div>
-                        <div id="halving-data-container">
-                            <!-- Halving data will be inserted here by JS -->
-                        </div>
+                    <div id="fed-stance-card" class="info-card">
+                        <h3>Federal Reserve</h3>
+                        <div id="fed-stance-display"></div>
+                    </div>
+                    <div id="interest-rate-card" class="info-card">
+                        <h3>Interest Rates</h3>
+                        <div id="interest-rate-display"></div>
                     </div>
                 </aside>
             </div>
