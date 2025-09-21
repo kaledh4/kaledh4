@@ -25,23 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const assetTickerInput = document.getElementById('asset-ticker-input');
     const lowThresholdInput = document.getElementById('low-threshold');
     const highThresholdInput = document.getElementById('high-threshold');
-    const macroSettingsForm = document.getElementById('macro-settings-form');
-    const fedStanceSelect = document.getElementById('fed-stance');
-    const fedRateInput = document.getElementById('fed-rate');
-    const rStarRateInput = document.getElementById('r-star-rate');
-    const fedStanceDisplay = document.getElementById('fed-stance-display');
-    const interestRateDisplay = document.getElementById('interest-rate-display');
 
     // --- Constants and State ---
     const CSV_URL_KEY = 'csvUrl';
     const THRESHOLDS_KEY = 'assetThresholds';
-    const MACRO_DATA_KEY = 'macroData';
     const DEFAULT_CSV_URL = 'dummy_data.csv';
     let state = {
-        portfolio: [], // Will hold data from the CSV
-        coinList: {}, // Mapping from symbol to coingecko id
-        thresholds: {},
-        macro: {}
+        portfolio: [],
+        thresholds: {}
     };
 
     // --- Settings UI Logic ---
@@ -105,33 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
         showMainSettingsView();
     });
 
-    macroSettingsForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        state.macro.fedStance = fedStanceSelect.value;
-        state.macro.fedRate = parseFloat(fedRateInput.value);
-        state.macro.rStarRate = parseFloat(rStarRateInput.value);
-        localStorage.setItem(MACRO_DATA_KEY, JSON.stringify(state.macro));
-        displayMacroData();
-        alert('Macro data saved!');
-    });
-
 
     // --- Data Fetching and Rendering ---
-    async function fetchCoinList() {
-        try {
-            const response = await fetch('https://api.coingecko.com/api/v3/coins/list');
-            const data = await response.json();
-            data.forEach(coin => {
-                state.coinList[coin.symbol.toUpperCase()] = coin.id;
-            });
-        } catch (error) {
-            console.error("Error fetching coin list:", error);
-        }
-    }
-
     function parseCSV(csvText) {
         const rows = csvText.trim().split('\n');
-        return rows.map(row => row.split(','));
+        return rows.map(row => {
+            const values = [];
+            let currentVal = '';
+            let inQuotes = false;
+            for (const char of row) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(currentVal.trim());
+                    currentVal = '';
+                } else {
+                    currentVal += char;
+                }
+            }
+            values.push(currentVal.trim());
+            return values;
+        });
     }
 
     function getColorClass(value, assetName) {
@@ -165,14 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const assetName = assetData[0];
         if (!assetName) return null;
 
-        const currentPrice = assetData.livePrice;
-        const riskLevel = parseFloat(assetData[1]); // The user said this is the risk level
+        const currentPrice = parseFloat(assetData[1]);
         const potentialHigh = parseFloat(assetData[4]);
 
         const card = document.createElement('div');
         card.className = 'asset-card';
 
-        // --- Card Header ---
         const cardHeader = document.createElement('div');
         cardHeader.className = 'card-header';
         const nameEl = document.createElement('span');
@@ -181,11 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cardHeader.appendChild(nameEl);
         card.appendChild(cardHeader);
 
-        // --- Card Body ---
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
 
-        // Risk Level
         const thresholds = state.thresholds[assetName];
         let riskLevelValue = 'N/A';
         let riskColorClass = '';
@@ -200,18 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
         riskPoint.querySelector('.value').classList.add('risk-level');
         cardBody.appendChild(riskPoint);
 
-        // Current Price
-        const priceText = currentPrice ? `$${currentPrice}` : 'N/A';
-        cardBody.appendChild(createDataPoint('Current Price', priceText));
+        cardBody.appendChild(createDataPoint('Current Price', assetData[1] || 'N/A'));
 
-        // Potential Upside
-        if (currentPrice && !isNaN(potentialHigh) && currentPrice > 0) {
+        if (!isNaN(potentialHigh) && !isNaN(currentPrice) && currentPrice > 0) {
             const upside = ((potentialHigh / currentPrice) - 1) * 100;
             cardBody.appendChild(createDataPoint('Potential Upside', `${upside.toFixed(0)}%`));
-        }
 
-        // X's
-        if (currentPrice && !isNaN(potentialHigh) && currentPrice > 0) {
             const xValue = potentialHigh / currentPrice;
             cardBody.appendChild(createDataPoint('X\'s', `${xValue.toFixed(2)}x`));
         }
@@ -242,63 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchData() {
-        // 1. Fetch portfolio from CSV
         const url = localStorage.getItem(CSV_URL_KEY) || DEFAULT_CSV_URL;
         try {
             const response = await fetch(url, { cache: 'no-cache' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const csvText = await response.text();
             state.portfolio = parseCSV(csvText);
-
-            // 2. Get coin IDs for the portfolio
-            const coinIds = state.portfolio.map(asset => state.coinList[asset[0].toUpperCase()]).filter(id => id).join(',');
-
-            // 3. Fetch prices from CoinGecko
-            if (coinIds) {
-                const priceResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=usd`);
-                const priceData = await priceResponse.json();
-
-                // 4. Merge prices into portfolio data
-                state.portfolio.forEach(asset => {
-                    const assetId = state.coinList[asset[0].toUpperCase()];
-                    if (priceData[assetId]) {
-                        asset.livePrice = priceData[assetId].usd;
-                    }
-                });
-            }
-
             renderData();
-
         } catch (error) {
             console.error('Error fetching or parsing data:', error);
             assetGrid.innerHTML = `<p class="error">Could not load data. Please check the CSV URL in Settings.</p>`;
         }
-    }
-
-    // --- Macro Data and Halving Countdown ---
-    function displayMacroData() {
-        fedStanceDisplay.innerHTML = '';
-        interestRateDisplay.innerHTML = '';
-
-        if (state.macro.fedStance) {
-            fedStanceDisplay.appendChild(createDataPoint('Fed Stance', state.macro.fedStance));
-        }
-        if (!isNaN(state.macro.fedRate)) {
-            interestRateDisplay.appendChild(createDataPoint('Fed Rate', `${state.macro.fedRate}%`));
-        }
-        if (!isNaN(state.macro.rStarRate)) {
-            interestRateDisplay.appendChild(createDataPoint('R* Rate', `${state.macro.rStarRate}%`));
-        }
-    }
-
-    function updateCountdown() {
-        const countdownTimer = document.getElementById('countdown-timer');
-        if (!countdownTimer) return;
-        const halvingDate = new Date('2028-07-01T00:00:00');
-        const now = new Date();
-        const diffTime = halvingDate - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        countdownTimer.textContent = diffDays;
     }
 
     // --- Initial Load and State Management ---
@@ -308,23 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const savedThresholds = JSON.parse(localStorage.getItem(THRESHOLDS_KEY)) || {};
         state.thresholds = savedThresholds;
-
-        const savedMacro = JSON.parse(localStorage.getItem(MACRO_DATA_KEY)) || {};
-        state.macro = savedMacro;
-        fedStanceSelect.value = state.macro.fedStance || 'neutral';
-        fedRateInput.value = state.macro.fedRate || '';
-        rStarRateInput.value = state.macro.rStarRate || '';
     }
 
     async function initializeApp() {
         loadState();
-        await fetchCoinList();
         await fetchData();
-        displayMacroData();
-        updateCountdown();
 
         setInterval(fetchData, 5 * 60 * 1000);
-        setInterval(updateCountdown, 60 * 60 * 1000);
     }
 
     initializeApp();
